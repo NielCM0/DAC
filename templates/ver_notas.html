@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Notas del Curso{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Notas del Curso</h3>
+        <div>
+            <a href="/docente" class="btn btn-secondary me-2">Volver</a>
+            <a href="/exportar_notas/{{ curso_id }}" class="btn btn-outline-primary">📤 Exportar PDF</a>
+            <a href="/grafico_curso/{{ curso_id }}" class="btn btn-outline-warning ms-2">📊 Ver gráfico</a>
+        </div>
+    </div>
+
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="buscar_dni" class="form-control" placeholder="Buscar estudiante por DNI" value="{{ request.args.get('buscar_dni', '') }}">
+            <button class="btn btn-outline-dark" type="submit">🔍 Buscar</button>
+        </div>
+    </form>
+
+    {% if notas %}
+        <table class="table table-bordered table-striped">
+            <thead class="table-light">
+                <tr>
+                    <th>ID Estudiante</th>
+                    <th>Nombre</th>
+                    <th>DNI</th>
+                    <th>Tipo de Evaluación</th>
+                    <th>Nota</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for nota in notas %}
+                <tr>
+                    <td>{{ nota.estudiante_id }}</td>
+                    <td>{{ nota.nombre }}</td>
+                    <td>{{ nota.dni }}</td>
+                    <td>{{ nota.tipo }}</td>
+                    <td>{{ nota.nota }}</td>
+                    <td>
+                        <a href="/modificar_nota/{{ nota.curso_id }}/{{ nota.estudiante_id }}/{{ nota.tipo }}" class="btn btn-sm btn-warning">Modificar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">Aún no se han registrado notas en este curso.</div>
+    {% endif %}
+</div>
+{% endblock %}

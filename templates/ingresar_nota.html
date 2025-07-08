@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Ingresar Nota{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body">
+                <h4 class="card-title mb-4 text-center">📝 Ingresar Nota</h4>
+                <form method="post">
+             <div class="mb-3 position-relative">
+    <label for="busqueda_nombre" class="form-label">Buscar estudiante</label>
+    <input type="text" class="form-control" id="busqueda_nombre" placeholder="Escribe el nombre o apellido">
+    <div id="resultados" class="list-group position-absolute w-100" style="z-index:1000;"></div>
+</div>
+<input type="hidden" name="estudiante_id" id="estudiante_id">
+
+
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo de evaluación</label>
+                        <select class="form-select" name="tipo" id="tipo" required>
+                            <option value="">-- Seleccione --</option>
+                            <option value="Examen 1">Examen 1</option>
+                            <option value="Examen 2">Examen 2</option>
+                            <option value="Práctica 1">Práctica 1</option>
+                            <option value="Práctica 2">Práctica 2</option>
+                            <option value="Tarea">Tarea</option>
+                            <option value="Trabajo final">Trabajo final</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nota" class="form-label">Nota</label>
+                        <input type="number" class="form-control" name="nota" id="nota" min="0" max="20" placeholder="Ej. 17" required>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="/docente" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-success">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+     /*para buscar el estudiante al momento de poner nota*/
+
+document.getElementById('busqueda_nombre').addEventListener('input', function () {
+    const query = this.value;
+    if (query.length < 2) {
+        document.getElementById('resultados').innerHTML = '';
+        return;
+    }
+
+    fetch('/buscar_estudiante?query=' + encodeURIComponent(query))
+        .then(res => res.json())
+        .then(data => {
+            const resultados = document.getElementById('resultados');
+            resultados.innerHTML = '';
+            data.forEach(est => {
+                const item = document.createElement('a');
+                item.classList.add('list-group-item', 'list-group-item-action');
+                item.textContent = `${est.nombre} (${est.dni})`;
+                item.dataset.id = est.id;
+                item.onclick = function () {
+                    document.getElementById('busqueda_nombre').value = est.nombre;
+                    document.getElementById('estudiante_id').value = est.id;
+                    resultados.innerHTML = '';
+                };
+                resultados.appendChild(item);
+            });
+        });
+});
+
+</script>
+{% endblock %}

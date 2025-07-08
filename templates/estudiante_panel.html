@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Notas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>📘 Notas del Estudiante</h3>
+</div>
+
+{% if notas %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Curso</th>
+                <th>Tipo de Evaluación</th>
+                <th>Nota</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in notas %}
+            <tr>
+                <td>{{ item.nombre }}</td>
+                <td>{{ item.tipo }}</td>
+                <td>{{ item.nota }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-info text-center">No hay notas registradas aún.</div>
+{% endif %}
+{% endblock %}

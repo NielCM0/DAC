@@ -1,0 +1,173 @@
+:root {
+    --bg-color: #fffbea;
+    --text-color: #000000;
+    --card-bg: #fff9c4;
+    --accent-color: #FFD700;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --hover-accent: rgba(255, 223, 0, 0.3);
+    --highlight-bg: #fff59d;
+    --navbar-bg: #FFD700;
+    --navbar-text: #000000;
+    --hover-text-color: #000000;
+}
+
+body.dark-mode {
+    --bg-color: #1a1a1a;
+    --text-color: #f1f1f1;
+    --card-bg: #2a2a2a;
+    --accent-color: #FFD700;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --hover-accent: rgba(255, 223, 0, 0.2);
+    --highlight-bg: #333300;
+    --navbar-bg: #FFD700;
+    --navbar-text: #000000;
+    --hover-text-color: #FFD700;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', sans-serif;
+    transition: background-color 0.5s, color 0.5s;
+}
+
+.toggle-mode {
+    margin-left: 10px;
+    background: transparent;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+}
+
+.navbar {
+    background-color: var(--navbar-bg) !important;
+    color: var(--navbar-text) !important;
+}
+
+.navbar .navbar-brand strong,
+.navbar .ms-auto span,
+.navbar .ms-auto a {
+    color: var(--navbar-text) !important;
+    transition: color 0.3s ease;
+}
+
+.navbar .ms-auto a:hover,
+.navbar .ms-auto span:hover {
+    color: var(--hover-text-color) !important;
+}
+
+.container {
+    max-width: 900px;
+    animation: fadeIn 1s ease-in-out;
+}
+
+h3, h4, h5, h2, label, p, span {
+    color: var(--text-color) !important;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    transition: color 0.3s ease;
+}
+
+.card {
+    background-color: var(--card-bg) !important;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px var(--shadow);
+    padding: 20px;
+    transition: background-color 0.3s;
+}
+
+.table {
+    background-color: var(--card-bg) !important;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px var(--shadow);
+    animation: slideUp 0.8s ease-in-out;
+    color: var(--text-color);
+}
+
+.table th {
+    background-color: var(--accent-color);
+    color: #000;
+    text-align: center;
+    font-weight: 600;
+}
+
+.table td {
+    text-align: center;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: var(--highlight-bg);
+}
+
+.table-striped > tbody > tr:hover {
+    background-color: var(--hover-accent);
+}
+
+.alert-info {
+    background-color: var(--highlight-bg);
+    color: var(--text-color);
+    border: 1px solid #ccc;
+    animation: fadeIn 1s;
+}
+
+input.form-control, select.form-select, textarea.form-control {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid #ccc;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+input::placeholder, textarea::placeholder {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+body.dark-mode .form-control,
+body.dark-mode select.form-select,
+body.dark-mode textarea.form-control {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid #666;
+}
+
+.btn-outline-danger {
+    border-color: var(--text-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--text-color);
+    color: var(--accent-color);
+}
+
+.form-control,
+.table,
+.card,
+select.form-select {
+    transition: background-color 0.4s, color 0.4s;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+    padding: 0.75rem;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(-10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
