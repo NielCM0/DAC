@@ -3,35 +3,39 @@
 {% block title %}Ver Cursos{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h3 class="mb-4">Listado de Cursos y Docentes Asignados</h3>
-    <a href="/admin" class="btn btn-secondary mb-3">Volver al Panel</a>
-    <table class="table table-striped table-bordered">
-        <thead class="table-light">
-            <tr>
-                <th>ID</th>
-                <th>Nombre del Curso</th>
-                <th>Docente Asignado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for curso in cursos %}
-            <tr>
-                <td>{{ curso.id }}</td>
-                <td>{{ curso.nombre }}</td>
-                <td>{{ curso.docente }}</td>
-                <td>
-<form method="post" action="/eliminar_curso/{{ curso.id }}" style="display:inline;">
-    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de eliminar este curso?')">
-        Eliminar
-    </button>
-</form>
+<div class="row justify-content-center mt-4">
+    <div class="col-12 col-lg-10">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+            <h4 class="mb-3 mb-md-0">📚 Listado de Cursos y Docentes Asignados</h4>
+            <a href="/admin" class="btn btn-secondary">Volver al Panel</a>
+        </div>
 
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Curso</th>
+                        <th>Docente</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for curso in cursos %}
+                    <tr>
+                        <td>{{ curso.id }}</td>
+                        <td>{{ curso.nombre }}</td>
+                        <td>{{ curso.docente }}</td>
+                        <td>
+                            <form method="post" action="/eliminar_curso/{{ curso.id }}" onsubmit="return confirm('¿Estás seguro de eliminar este curso?')">
+                                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -4,19 +4,44 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow">
+    <div class="col-lg-6 col-md-8 col-sm-12">
+        <div class="card shadow-sm">
             <div class="card-body">
                 <h4 class="card-title mb-4 text-center">👤 Crear Nuevo Usuario</h4>
                 <form method="post">
-                   <div class="mb-3">
-    <label for="dni" class="form-label">DNI</label>
-    <input type="text" class="form-control" name="dni" id="dni" required onblur="consultarReniec()">
-</div>
+                    <div class="mb-3">
+                        <label for="dni" class="form-label">DNI</label>
+                        <input type="text" class="form-control" name="dni" id="dni" required onblur="consultarReniec()">
+                    </div>
 
-<div class="mb-3">
-    <label for="nombre" class="form-label">Nombre completo</label>
-    <input type="text" class="form-control" name="nombre" id="nombre" required>
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre completo</label>
+                        <input type="text" class="form-control" name="nombre" id="nombre" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" name="password" id="password" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="rol" class="form-label">Rol</label>
+                        <select class="form-select" name="rol" id="rol" required>
+                            <option value="">-- Seleccione un rol --</option>
+                            <option value="admin">Administrador</option>
+                            <option value="docente">Docente</option>
+                            <option value="estudiante">Estudiante</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
+                        <a href="/admin" class="btn btn-secondary w-100">Cancelar</a>
+                        <button type="submit" class="btn btn-primary w-100">Crear Usuario</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -36,28 +61,4 @@ function consultarReniec() {
     }
 }
 </script>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" class="form-control" name="password" id="password" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="rol" class="form-label">Rol</label>
-                        <select class="form-select" name="rol" id="rol" required>
-                            <option value="">-- Seleccione un rol --</option>
-                            <option value="admin">Administrador</option>
-                            <option value="docente">Docente</option>
-                            <option value="estudiante">Estudiante</option>
-                        </select>
-                    </div>
-
-                    <div class="d-flex justify-content-between">
-                        <a href="/admin" class="btn btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn btn-primary">Crear Usuario</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}

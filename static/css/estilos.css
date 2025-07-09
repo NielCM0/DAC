@@ -171,3 +171,31 @@ select.form-select {
     0% { opacity: 0; transform: translateY(20px); }
     100% { opacity: 1; transform: translateY(0); }
 }
+
+/* Ajustes para dispositivos pequeños */
+@media (max-width: 768px) {
+    h1, h2, h3, h4, h5 {
+        font-size: 1.25rem;
+    }
+
+    .card, .btn, input, select, textarea {
+        font-size: 0.95rem;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .navbar-brand strong {
+        font-size: 1rem;
+    }
+
+    .form-control, .form-select {
+        width: 100%;
+    }
+
+    .toggle-mode {
+        font-size: 1rem;
+        padding: 0.3rem 0.6rem;
+    }
+}

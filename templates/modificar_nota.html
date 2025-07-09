@@ -3,26 +3,30 @@
 {% block title %}Modificar Nota{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card">
-        <div class="card-body">
-            <h4 class="card-title mb-4">Modificar Nota</h4>
-            <form method="post">
-                <div class="mb-3">
-                    <label class="form-label">Estudiante</label>
-                    <input type="text" class="form-control" value="{{ estudiante.nombre }}" disabled>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Tipo de Evaluación</label>
-                    <input type="text" class="form-control" value="{{ tipo }}" disabled>
-                </div>
-                <div class="mb-3">
-                    <label for="nota" class="form-label">Nueva Nota</label>
-                    <input type="number" class="form-control" name="nota" id="nota" min="0" max="20" value="{{ nota }}" required>
-                </div>
-                <button type="submit" class="btn btn-success">Actualizar</button>
-                <a href="/ver_notas/{{ curso_id }}" class="btn btn-secondary">Cancelar</a>
-            </form>
+<div class="row justify-content-center mt-4">
+    <div class="col-12 col-md-6">
+        <div class="card shadow">
+            <div class="card-body">
+                <h4 class="card-title mb-4 text-center">📝 Modificar Nota</h4>
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Estudiante</label>
+                        <input type="text" class="form-control" value="{{ estudiante.nombre }}" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Evaluación</label>
+                        <input type="text" class="form-control" value="{{ tipo }}" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nota" class="form-label">Nueva Nota</label>
+                        <input type="number" class="form-control" name="nota" id="nota" min="0" max="20" value="{{ nota }}" required>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                        <a href="/ver_notas/{{ curso_id }}" class="btn btn-secondary w-100">Cancelar</a>
+                        <button type="submit" class="btn btn-success w-100">Actualizar</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>

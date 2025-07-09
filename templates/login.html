@@ -35,16 +35,23 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow: hidden;
+            flex-direction: column;
+            padding: 1rem;
+            overflow-x: hidden; /* 👈 solo oculta scroll horizontal */
+
         }
 
         .ring {
             position: relative;
-            width: 500px;
-            height: 500px;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            max-height: 500px;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 1rem;
+
         }
 
         .ring i {
@@ -86,11 +93,12 @@
 
         .login {
             background: var(--card-bg);
-            padding: 2em;
+            padding: 1.5rem;
             border-radius: 10px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
             position: absolute;
-            width: 300px;
+            width: 100%;
+            max-width: 350px;
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -109,11 +117,11 @@
 
         .inputBx input {
             width: 100%;
-            padding: 12px 20px;
+            padding: 10px 16px;
             background: transparent;
             border: 2px solid var(--text-color);
             border-radius: 40px;
-            font-size: 1.1em;
+            font-size: 1em;
             color: var(--text-color);
             outline: none;
         }
@@ -147,7 +155,6 @@
         }
 
         .toggle-mode {
-            position: fixed;
             top: 10px;
             right: 10px;
             background: transparent;
@@ -161,7 +168,6 @@
 </head>
 
 <body>
-    <button class="toggle-mode" onclick="toggleDarkMode()">🌓</button>
 
     <script>
         function toggleDarkMode() {
@@ -181,7 +187,8 @@
         <i style="--clr:#ff0057;"></i>
         <i style="--clr:#fffd44;"></i>
         <div class="login">
-            <h4>Iniciar Sesión</h4>
+            <h4>Iniciar Sesión     <button class="toggle-mode" onclick="toggleDarkMode()">🌓</button>
+</h4>
             {% if error %}
                 <div class="alert alert-danger">{{ error }}</div>
             {% endif %}

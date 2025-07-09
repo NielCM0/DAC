@@ -3,13 +3,13 @@
 {% block title %}Notas del Curso{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>Notas del Curso</h3>
-        <div>
-            <a href="/docente" class="btn btn-secondary me-2">Volver</a>
+<div class="container mt-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
+        <h4 class="mb-2 mb-md-0">📋 Notas del Curso</h4>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="/docente" class="btn btn-secondary">🔙 Volver</a>
             <a href="/exportar_notas/{{ curso_id }}" class="btn btn-outline-primary">📤 Exportar PDF</a>
-            <a href="/grafico_curso/{{ curso_id }}" class="btn btn-outline-warning ms-2">📊 Ver gráfico</a>
+            <a href="/grafico_curso/{{ curso_id }}" class="btn btn-outline-warning">📊 Ver gráfico</a>
         </div>
     </div>
 
@@ -21,13 +21,14 @@
     </form>
 
     {% if notas %}
-        <table class="table table-bordered table-striped">
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
             <thead class="table-light">
                 <tr>
                     <th>ID Estudiante</th>
                     <th>Nombre</th>
                     <th>DNI</th>
-                    <th>Tipo de Evaluación</th>
+                    <th>Tipo</th>
                     <th>Nota</th>
                     <th>Acción</th>
                 </tr>
@@ -41,14 +42,15 @@
                     <td>{{ nota.tipo }}</td>
                     <td>{{ nota.nota }}</td>
                     <td>
-                        <a href="/modificar_nota/{{ nota.curso_id }}/{{ nota.estudiante_id }}/{{ nota.tipo }}" class="btn btn-sm btn-warning">Modificar</a>
+                        <a href="/modificar_nota/{{ nota.curso_id }}/{{ nota.estudiante_id }}/{{ nota.tipo }}" class="btn btn-sm btn-warning">✏️</a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+    </div>
     {% else %}
-        <div class="alert alert-info">Aún no se han registrado notas en este curso.</div>
+        <div class="alert alert-info text-center">Aún no se han registrado notas en este curso.</div>
     {% endif %}
 </div>
 {% endblock %}

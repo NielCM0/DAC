@@ -3,49 +3,54 @@
 {% block title %}Panel Administrador{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Panel del Administrador</h2>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+    <h2 class="mb-2">Panel del Administrador</h2>
 </div>
 
 <div class="row mb-4">
-    <div class="col-md-6">
-        <a href="/crear_usuario" class="btn btn-primary w-100 mb-2">Crear Usuario</a>
+    <div class="col-md-4 col-sm-12 mb-2">
+        <a href="/crear_usuario" class="btn btn-primary w-100">Crear Usuario</a>
     </div>
-    <div class="col-md-6">
-        <a href="/crear_curso" class="btn btn-success w-100 mb-2">Crear Curso</a>
+    <div class="col-md-4 col-sm-12 mb-2">
+        <a href="/crear_curso" class="btn btn-success w-100">Crear Curso</a>
     </div>
-    <div >
-        <a href="/ver_cursos" class="btn btn-info btn-sm w-100">Ver Cursos</a>
-</div>
+    <div class="col-md-4 col-sm-12 mb-2">
+        <a href="/ver_cursos" class="btn btn-info w-100">Ver Cursos</a>
+    </div>
 </div>
 
-<h4>Usuarios registrados</h4>
-<table class="table table-bordered table-striped">
-    <thead class="table-light">
-        <tr>
-            <th>ID</th>
-            <th>DNI</th>
-            <th>Nombre</th>
-            <th>Rol</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for u in usuarios %}
-        <tr>
-            <td>{{ u.id }}</td>
-            <td>{{ u.dni }}</td>
-            <td>{{ u.nombre }}</td>
-            <td>{{ u.rol }}</td>
-            <td class="d-flex flex-column gap-1">
-                <a href="/editar_usuario/{{ u.id }}" class="btn btn-sm btn-warning w-100">Editar</a>
-                <a href="/cambiar_contraseña/{{ u.id }}" class="btn btn-sm btn-secondary w-100">Cambiar contraseña</a>
-                <form method="post" action="/eliminar_usuario/{{ u.id }}">
-                    <button type="submit" class="btn btn-sm btn-danger w-100" onclick="return confirm('¿Estás seguro?')">Eliminar</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<h4 class="mt-4">Usuarios registrados</h4>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>DNI</th>
+                <th>Nombre</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in usuarios %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.dni }}</td>
+                <td>{{ u.nombre }}</td>
+                <td>{{ u.rol }}</td>
+                <td>
+                    <div class="d-grid gap-1">
+                        <a href="/editar_usuario/{{ u.id }}" class="btn btn-sm btn-warning">Editar</a>
+                        <a href="/cambiar_contraseña/{{ u.id }}" class="btn btn-sm btn-secondary">Cambiar contraseña</a>
+                        <form method="post" action="/eliminar_usuario/{{ u.id }}">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro?')">Eliminar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
