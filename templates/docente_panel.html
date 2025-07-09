@@ -7,6 +7,13 @@
     <h3 class="mb-3 mb-md-0">👨‍🏫 Panel del Docente</h3>
 </div>
 
+<div class="col-md-4 col-sm-12 mb-2">
+    <a href="/crear_usuario_docente" class="btn btn-primary w-100">Crear Usuario Estudiante</a>
+</div>
+<div class="col-md-4 col-sm-12 mb-2">
+    <a href="/estudiantes" class="btn btn-success w-100">Estudiantes</a>
+</div>
+
 {% if cursos %}
     <div class="row">
         {% for curso in cursos %}
@@ -17,6 +24,9 @@
                         <h5 class="card-title">{{ curso.nombre }}</h5>
                         {% if curso.grado %}
                         <p class="card-text">📚 Grado: {{ curso.grado }}°</p>
+                        {% endif %}
+                        {% if curso.seccion %}
+                        <p class="card-text">📝 Sección: {{ curso.seccion }}</p>  <!-- Mostrar la sección -->
                         {% endif %}
                     </div>
                     <div class="mt-3">

@@ -84,30 +84,79 @@ def crear_usuario():
         return redirect('/admin')
     return render_template('crear_usuario.html')
 
-@app.route('/crear_curso', methods=['GET', 'POST'])
-def crear_curso():
-    if session.get('rol') != 'admin':
+@app.route('/estudiantes')
+def estudiantes():
+    if session.get('rol') != 'docente':
         return redirect('/')
 
     conn = get_db_connection()
     cur = conn.cursor()
+    cur.execute("SELECT id, dni, nombre, rol FROM usuarios")
+    usuarios = cur.fetchall()
+    cur.close()
+    conn.close()
 
+    return render_template('estudiantes.html', usuarios=usuarios)
+
+@app.route('/crear_usuario_docente', methods=['GET', 'POST'])
+def crear_usuario_docente():
+    if session.get('rol') != 'docente':
+        return redirect('/')
     if request.method == 'POST':
+        dni = request.form['dni']
         nombre = request.form['nombre']
-        docente_id = request.form['docente_id']
-        grado = request.form['grado']
-        cur.execute("INSERT INTO cursos (nombre, docente_id, grado) VALUES (%s, %s, %s)", (nombre, docente_id, grado))
+        password = generate_password_hash(request.form['password'])
+        rol = request.form['rol']
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO usuarios (dni, nombre, password, rol) VALUES (%s, %s, %s, %s)",
+                    (dni, nombre, password, rol))
         conn.commit()
         cur.close()
         conn.close()
+        return redirect('/docente')
+    return render_template('crear_usuario_docente.html')
+
+@app.route('/crear_curso', methods=['GET', 'POST'])
+def crear_curso():
+    # Verificar si el usuario es un administrador
+    if session.get('rol') != 'admin':
+        return redirect('/')
+
+    # Conexión a la base de datos
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        # Obtener los datos del formulario
+        nombre = request.form['nombre']
+        docente_id = request.form['docente_id']
+        grado = request.form['grado']
+        seccion = request.form['seccion']  # Obtener el valor de la sección
+
+        # Ejecutar la consulta para insertar el nuevo curso en la base de datos
+        cur.execute("INSERT INTO cursos (nombre, docente_id, grado, seccion) VALUES (%s, %s, %s, %s)", 
+                    (nombre, docente_id, grado, seccion))
+
+        # Confirmar la transacción
+        conn.commit()
+
+        # Cerrar la conexión a la base de datos
+        cur.close()
+        conn.close()
+
+        # Redirigir a la página de administración
         return redirect('/admin')
 
     # Si es GET, cargar los docentes disponibles
     cur.execute("SELECT id, nombre FROM usuarios WHERE rol = 'docente'")
     docentes = cur.fetchall()
+
+    # Cerrar la conexión a la base de datos
     cur.close()
     conn.close()
 
+    # Renderizar la plantilla con los docentes disponibles
     return render_template('crear_curso.html', docentes=docentes)
 
 @app.route('/eliminar_curso/<int:curso_id>', methods=['POST'])
@@ -192,7 +241,7 @@ def estudiante_panel():
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT c.nombre, n.tipo, n.nota
+        SELECT c.nombre, c.seccion, n.tipo, n.nota
         FROM notas n
         JOIN cursos c ON c.id = n.curso_id
         WHERE n.estudiante_id = %s
@@ -203,7 +252,68 @@ def estudiante_panel():
     conn.close()
     return render_template('estudiante_panel.html', notas=notas)
 
+@app.route('/editar_usuario_docente/<int:id>', methods=['GET', 'POST'])
+def editar_usuario_docente(id):
+    if session.get('rol') != 'docente':
+        return redirect('/')
 
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        nuevo_nombre = request.form['nombre']
+        cur.execute("UPDATE usuarios SET nombre = %s WHERE id = %s", (nuevo_nombre, id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect('/docente')
+
+    cur.execute("SELECT * FROM usuarios WHERE id = %s", (id,))
+    usuario = cur.fetchone()
+    cur.close()
+    conn.close()
+    return render_template('editar_usuario.html', usuario=usuario)
+
+
+@app.route('/cambiar_contraseña_docente/<int:id>', methods=['GET', 'POST'])
+def cambiar_contraseña_docente(id):
+    if session.get('rol') != 'docente':
+        return redirect('/')
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        nueva_clave = generate_password_hash(request.form['password'])
+        cur.execute("UPDATE usuarios SET password = %s WHERE id = %s", (nueva_clave, id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect('/docente')
+
+    cur.execute("SELECT * FROM usuarios WHERE id = %s", (id,))
+    usuario = cur.fetchone()
+    cur.close()
+    conn.close()
+    return render_template('cambiar_contraseña.html', usuario=usuario)
+
+@app.route('/eliminar_usuario_docente/<int:id>', methods=['POST'])
+def eliminar_usuario_docente(id):
+    if session.get('rol') != 'docente':
+        return redirect('/')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Eliminar relaciones antes de borrar el usuario
+    cur.execute("DELETE FROM estudiantes_cursos WHERE estudiante_id = %s", (id,))
+    cur.execute("DELETE FROM notas WHERE estudiante_id = %s", (id,))
+    cur.execute("DELETE FROM cursos WHERE docente_id = %s", (id,))
+    cur.execute("DELETE FROM usuarios WHERE id = %s", (id,))
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+    return redirect('/docente')
 
 @app.route('/editar_usuario/<int:id>', methods=['GET', 'POST'])
 def editar_usuario(id):
@@ -274,7 +384,7 @@ def ver_cursos():
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT c.id, c.nombre, u.nombre AS docente
+        SELECT c.id, c.nombre, c.seccion, u.nombre AS docente
         FROM cursos c
         JOIN usuarios u ON c.docente_id = u.id
     """)

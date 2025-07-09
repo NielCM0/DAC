@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel Administrador{% endblock %}
+
+{% block content %}
+
+<h4 class="mt-4">Estudiantes</h4>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>DNI</th>
+                <th>Nombre</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in usuarios %}
+                {% if u.rol == 'estudiante' %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td>{{ u.dni }}</td>
+                    <td>{{ u.nombre }}</td>
+                    <td>{{ u.rol }}</td>
+                    <td>
+                        <div class="d-grid gap-1">
+                            <a href="/editar_usuario_docente/{{ u.id }}" class="btn btn-sm btn-warning">Editar</a>
+                            <a href="/cambiar_contraseña_docente/{{ u.id }}" class="btn btn-sm btn-secondary">Cambiar contraseña</a>
+                            <form method="post" action="/eliminar_usuario_docente/{{ u.id }}">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro?')">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

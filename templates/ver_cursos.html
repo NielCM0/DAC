@@ -16,6 +16,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Curso</th>
+                        <th>Seccion</th>
                         <th>Docente</th>
                         <th>Acciones</th>
                     </tr>
@@ -25,6 +26,7 @@
                     <tr>
                         <td>{{ curso.id }}</td>
                         <td>{{ curso.nombre }}</td>
+                        <td>{{ curso.seccion }}</td>
                         <td>{{ curso.docente }}</td>
                         <td>
                             <form method="post" action="/eliminar_curso/{{ curso.id }}" onsubmit="return confirm('¿Estás seguro de eliminar este curso?')">
