@@ -29,9 +29,10 @@
                         </select>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="nota" class="form-label">Nota</label>
-                        <input type="number" class="form-control" name="nota" id="nota" min="0" max="20" placeholder="Ej. 17" required>
+                   <div class="mb-3">
+                         <label for="nota" class="form-label">Nota</label>
+                         <input type="text" class="form-control" name="nota" id="nota" placeholder="Ej. A, B, C, AD" 
+                               pattern="^(A|B|C|AD)$" title="Solo puedes ingresar A, B, C, o AD" required>
                     </div>
 
                     <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
