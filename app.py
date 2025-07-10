@@ -6,9 +6,10 @@ import requests
 from flask import jsonify
 from flask import Flask, render_template, request, redirect, session, flash
 from io import BytesIO
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import landscape, letter
 from reportlab.pdfgen import canvas
 from flask import Response
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
@@ -650,12 +651,21 @@ def exportar_notas(curso_id):
 
     # Obtener el nombre del curso
     cur.execute("""
-        SELECT nombre
+        SELECT nombre, docente_id
         FROM cursos
         WHERE id = %s
     """, (curso_id,))
     curso = cur.fetchone()
     curso_nombre = curso['nombre'] if curso else 'Curso Desconocido'
+    docente_id = curso['docente_id']
+     # Obtener el nombre del docente
+    cur.execute("""
+        SELECT nombre
+        FROM usuarios
+        WHERE id = %s
+    """, (docente_id,))
+    docente = cur.fetchone()
+    docente_nombre = docente['nombre'] if docente else 'Docente Desconocido'
 
     # Obtener los estudiantes y sus notas para el curso
     cur.execute("""
@@ -678,23 +688,39 @@ def exportar_notas(curso_id):
     cur.close()
     conn.close()
 
-    # Crear un archivo PDF en memoria
+    # Crear un archivo PDF en memoria con formato horizontal
     buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
+    c = canvas.Canvas(buffer, pagesize=landscape(letter))  # Usamos landscape para formato horizontal
+    width, height = landscape(letter)  # Ajustamos las dimensiones a formato horizontal
 
-    # Título del curso
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(200, height - 40, f"Boleta de Notas - {curso_nombre}")
+    # Cargar la imagen de encabezado desde la carpeta static/images
+    encabezado_img = 'static/img/encabezado_pdf.png'  # Ruta de la imagen
+    c.drawImage(encabezado_img, 20, height - 180, width=800, preserveAspectRatio=True)  # Ajusta el tamaño y la posición de la imagen
+    
+    # Título con el nombre del curso debajo del encabezado
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(300, height - 65, f"Curso: {curso_nombre}")  # Nombre del curso debajo de la imagen
+    # Nombre del docente debajo del nombre del curso
+    c.setFont("Helvetica", 12)
+    c.drawString(30, height - 90, f"Docente: {docente_nombre}")  # Nombre del docente debajo del nombre del curso
+
+    # Subtítulo con la fecha actual debajo del encabezado
+    c.setFont("Helvetica", 12)
+    current_date = datetime.now().strftime("%d/%m/%Y")
+    c.drawString(660, height - 90, f"Fecha: {current_date}")
+
+    # Línea de separación debajo del encabezado
+    c.setLineWidth(1)
+    c.line(30, height - 100, width - 30, height - 100)
 
     # Títulos de las columnas
     c.setFont("Helvetica-Bold", 12)
-    y_position = height - 80
+    y_position = height - 110
     c.drawString(30, y_position, "ID")
     c.drawString(80, y_position, "DNI")
     c.drawString(160, y_position, "Nombre")
 
-    # Agregar las columnas de tipos de examen, comenzando a partir de una posición más a la derecha
+    # Agregar las columnas de tipos de examen
     x_position = 340
     for tipo in tipos_examen:
         c.drawString(x_position, y_position, tipo['tipo'])
@@ -726,7 +752,7 @@ def exportar_notas(curso_id):
 
         # Ajuste automático del nombre para que no se desborde, y dividirlo si es necesario
         name = estudiante['nombre']
-        max_name_width = 160  # Ancho máximo permitido para el nombre
+        max_name_width = 200  # Ancho máximo permitido para el nombre
         name_lines = []
 
         # Ajustar el nombre si excede el ancho de la columna
@@ -749,17 +775,17 @@ def exportar_notas(curso_id):
             c.drawString(160, y_position - y_offset, line)
             y_offset += 12  # Desplazar hacia abajo para cada nueva línea del nombre
 
-        y_position -= (y_offset)  # Ajustar la posición Y en función del número de líneas de nombre
+      #  y_position -= (y_offset)  # Ajustar la posición Y en función del número de líneas de nombre
 
         # Mostrar las notas por tipo de examen
-        x_position = 340
+        x_position = 350
         for tipo in tipos_examen:
             tipo_examen = tipo['tipo']
             # Mostrar la nota si existe para ese tipo de examen, sino mostrar un guion
             c.drawString(x_position, y_position, estudiante['notas'].get(tipo_examen, '--'))
             x_position += 50  # Espaciado entre columnas
 
-        y_position -= 50  # Espacio entre filas de estudiantes
+        y_position -= 20  # Espacio entre filas de estudiantes
 
         # Verificar si hay espacio suficiente en la página, si no, agregar una nueva página
         if y_position < 60:
