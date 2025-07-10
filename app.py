@@ -5,6 +5,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 from flask import jsonify
 from flask import Flask, render_template, request, redirect, session, flash
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from flask import Response
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
@@ -460,8 +464,8 @@ def ver_cursos():
     conn.close()
     return render_template('ver_cursos.html', cursos=cursos)
 
-@app.route('/ver_notas/<int:curso_id>')
-def ver_notas(curso_id):
+@app.route('/modificar_nota_curso/<int:curso_id>')
+def modificar_nota_curso(curso_id):
     if session.get('rol') != 'docente':
         return redirect('/')
 
@@ -478,7 +482,7 @@ def ver_notas(curso_id):
     cur.close()
     conn.close()
 
-    return render_template('ver_notas.html', notas=notas)
+    return render_template('modificar_nota_curso.html', notas=notas)
 @app.route('/modificar_nota/<int:curso_id>/<int:estudiante_id>/<tipo>', methods=['GET', 'POST'])
 def modificar_nota(curso_id, estudiante_id, tipo):
     if session.get('rol') != 'docente':
@@ -554,8 +558,8 @@ def buscar_estudiante():
         print("ERROR en /buscar_estudiante:", e)
         return jsonify({"error": "Error al buscar estudiantes"}), 500
 
-@app.route('/ver_estudiantes_curso/<int:curso_id>', methods=['GET', 'POST'])
-def ver_estudiantes_curso(curso_id):
+@app.route('/ingresar_notas/<int:curso_id>', methods=['GET', 'POST'])
+def ingresar_notas(curso_id):
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -572,15 +576,13 @@ def ver_estudiantes_curso(curso_id):
                 cur.execute("""
                     INSERT INTO notas (estudiante_id, curso_id, nota, tipo)
                     VALUES (%s, %s, %s, %s)
-                    ON CONFLICT (estudiante_id, curso_id) 
-                    DO UPDATE SET nota = EXCLUDED.nota, tipo = EXCLUDED.tipo
                 """, (estudiante_id.split('_')[1], curso_id, nota, tipo_examen))
 
         conn.commit()
         cur.close()
         conn.close()
         flash("Notas y tipos de examen guardados correctamente", "success")
-        return redirect(f"/ver_estudiantes_curso/{curso_id}")
+        return redirect(f"/ingresar_notas/{curso_id}")
 
     # Obtener los estudiantes del curso
     cur.execute("""
@@ -596,7 +598,185 @@ def ver_estudiantes_curso(curso_id):
     cur.close()
     conn.close()
 
-    return render_template('ver_estudiantes_curso.html', estudiantes=estudiantes, curso_id=curso_id)
+    return render_template('ingresar_notas.html', estudiantes=estudiantes, curso_id=curso_id)
+
+@app.route('/ver_notas_curso/<int:curso_id>', methods=['GET'])
+def ver_notas_curso(curso_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Obtener los tipos de examen para el curso
+    cur.execute("""
+        SELECT DISTINCT tipo
+        FROM notas
+        WHERE curso_id = %s
+    """, (curso_id,))
+    tipos_examen = cur.fetchall()
+
+    # Obtener las notas de los estudiantes
+    cur.execute("""
+        SELECT u.id, u.nombre, u.dni, n.nota, n.tipo
+        FROM usuarios u
+        JOIN estudiantes_cursos ec ON u.id = ec.estudiante_id
+        LEFT JOIN notas n ON u.id = n.estudiante_id AND ec.curso_id = n.curso_id
+        WHERE ec.curso_id = %s
+    """, (curso_id,))
+    estudiantes = cur.fetchall()
+
+    # Organizar las notas por tipo de examen para cada estudiante
+    estudiantes_dict = {}
+    for estudiante in estudiantes:
+        estudiante_id = estudiante['id']
+        if estudiante_id not in estudiantes_dict:
+            estudiantes_dict[estudiante_id] = {
+                'id': estudiante_id,
+                'nombre': estudiante['nombre'],
+                'dni': estudiante['dni'],
+                'notas': {}
+            }
+        
+        estudiantes_dict[estudiante_id]['notas'][estudiante['tipo']] = estudiante['nota']
+
+    cur.close()
+    conn.close()
+
+    return render_template('ver_notas_curso.html', estudiantes=estudiantes_dict.values(), curso_id=curso_id, tipos_examen=tipos_examen)
+
+
+@app.route('/exportar_notas/<int:curso_id>', methods=['GET'])
+def exportar_notas(curso_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Obtener el nombre del curso
+    cur.execute("""
+        SELECT nombre
+        FROM cursos
+        WHERE id = %s
+    """, (curso_id,))
+    curso = cur.fetchone()
+    curso_nombre = curso['nombre'] if curso else 'Curso Desconocido'
+
+    # Obtener los estudiantes y sus notas para el curso
+    cur.execute("""
+        SELECT u.id, u.nombre, u.dni, n.tipo, n.nota
+        FROM usuarios u
+        JOIN estudiantes_cursos ec ON u.id = ec.estudiante_id
+        LEFT JOIN notas n ON u.id = n.estudiante_id AND ec.curso_id = n.curso_id
+        WHERE ec.curso_id = %s
+    """, (curso_id,))
+    estudiantes = cur.fetchall()
+
+    # Obtener los tipos de examen
+    cur.execute("""
+        SELECT DISTINCT tipo
+        FROM notas
+        WHERE curso_id = %s
+    """, (curso_id,))
+    tipos_examen = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    # Crear un archivo PDF en memoria
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    # Título del curso
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(200, height - 40, f"Boleta de Notas - {curso_nombre}")
+
+    # Títulos de las columnas
+    c.setFont("Helvetica-Bold", 12)
+    y_position = height - 80
+    c.drawString(30, y_position, "ID")
+    c.drawString(80, y_position, "DNI")
+    c.drawString(160, y_position, "Nombre")
+
+    # Agregar las columnas de tipos de examen, comenzando a partir de una posición más a la derecha
+    x_position = 340
+    for tipo in tipos_examen:
+        c.drawString(x_position, y_position, tipo['tipo'])
+        x_position += 50  # Espaciado entre columnas para los tipos de examen
+
+    y_position -= 20  # Espacio después de los encabezados
+
+    # Crear un diccionario para agrupar las notas por estudiante
+    estudiantes_dict = {}
+    for estudiante in estudiantes:
+        if estudiante['id'] not in estudiantes_dict:
+            estudiantes_dict[estudiante['id']] = {
+                'id': estudiante['id'],
+                'nombre': estudiante['nombre'],
+                'dni': estudiante['dni'],
+                'notas': {}
+            }
+        estudiantes_dict[estudiante['id']]['notas'][estudiante['tipo']] = estudiante['nota']
+
+    # Ajustar el tamaño de la fuente
+    font_size = 10  # Fuente normal
+    c.setFont("Helvetica", font_size)
+
+    # Mostrar las notas de los estudiantes
+    for estudiante in estudiantes_dict.values():
+        c.setFont("Helvetica", font_size)  # Fuente más pequeña para las notas
+        c.drawString(30, y_position, str(estudiante['id']))
+        c.drawString(80, y_position, str(estudiante['dni']))
+
+        # Ajuste automático del nombre para que no se desborde, y dividirlo si es necesario
+        name = estudiante['nombre']
+        max_name_width = 160  # Ancho máximo permitido para el nombre
+        name_lines = []
+
+        # Ajustar el nombre si excede el ancho de la columna
+        max_width = max_name_width  # Ancho máximo permitido para la columna de nombre
+        words = name.split()  # Dividir el nombre en palabras
+        current_line = ""
+        for word in words:
+            # Si agregar la palabra excede el límite de ancho, comenzamos una nueva línea
+            if c.stringWidth(current_line + " " + word, "Helvetica", font_size) < max_width:
+                current_line += " " + word
+            else:
+                name_lines.append(current_line)
+                current_line = word
+        if current_line:  # Añadir la última línea
+            name_lines.append(current_line)
+
+        # Dibujar el nombre (ahora dividido en líneas)
+        y_offset = 0
+        for line in name_lines:
+            c.drawString(160, y_position - y_offset, line)
+            y_offset += 12  # Desplazar hacia abajo para cada nueva línea del nombre
+
+        y_position -= (y_offset)  # Ajustar la posición Y en función del número de líneas de nombre
+
+        # Mostrar las notas por tipo de examen
+        x_position = 340
+        for tipo in tipos_examen:
+            tipo_examen = tipo['tipo']
+            # Mostrar la nota si existe para ese tipo de examen, sino mostrar un guion
+            c.drawString(x_position, y_position, estudiante['notas'].get(tipo_examen, '--'))
+            x_position += 50  # Espaciado entre columnas
+
+        y_position -= 50  # Espacio entre filas de estudiantes
+
+        # Verificar si hay espacio suficiente en la página, si no, agregar una nueva página
+        if y_position < 60:
+            c.showPage()
+            c.setFont("Helvetica", font_size)
+            y_position = height - 80
+
+    # Guardar el archivo PDF en memoria
+    c.showPage()
+    c.save()
+
+    # Obtener el contenido del PDF generado
+    buffer.seek(0)
+    pdf_content = buffer.getvalue()
+
+    # Enviar el PDF al navegador como respuesta HTTP
+    return Response(pdf_content, content_type='application/pdf')
 
 if __name__ == '__main__':
     app.run(debug=True)

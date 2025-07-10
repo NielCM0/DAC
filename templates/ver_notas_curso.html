@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Notas del Curso{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">👁️ Notas del Curso</h3>
+<div class="d-flex flex-wrap gap-2">
+    <a href="/docente" class="btn btn-secondary">🔙 Volver</a>
+    <a href="/exportar_notas/{{ curso_id }}" class="btn btn-outline-primary">📤 Exportar PDF</a>
+    <a href="/grafico_curso/{{ curso_id }}" class="btn btn-outline-warning">📊 Ver gráfico</a>
+</div>
+
+<!-- Tabla para mostrar las notas de los estudiantes -->
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>DNI</th>
+            <th>Nombre</th>
+            
+            <!-- Crear una columna para cada tipo de examen -->
+            {% for tipo in tipos_examen %}
+                <th>{{ tipo['tipo'] }}</th>  <!-- Nombre del tipo de examen (ej. 'Práctica 1') -->
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for estudiante in estudiantes %}
+        <tr>
+            <td>{{ estudiante['id'] }}</td> <!-- ID del estudiante -->
+            <td>{{ estudiante['dni'] }}</td> <!-- DNI del estudiante -->
+            <td>{{ estudiante['nombre'] }}</td> <!-- Nombre del estudiante -->
+
+            <!-- Mostrar las notas por tipo de examen -->
+            {% for tipo in tipos_examen %}
+                <td>
+                    {% if tipo['tipo'] in estudiante['notas'] %}
+                        {{ estudiante['notas'][tipo['tipo']] }}  <!-- Mostrar la nota si existe -->
+                    {% else %}
+                        --  <!-- Si no hay nota, mostrar un guion -->
+                    {% endif %}
+                </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

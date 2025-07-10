@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Estudiantes del Curso{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">📝 Ingresar Notas</h3>
+ <div class="d-flex flex-wrap gap-2">
+            <a href="/docente" class="btn btn-secondary">🔙 Volver</a>
+        </div>
+
+<form method="POST">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>DNI</th>
+                <th>Nombre</th>
+                <th>Nota</th>
+                <th>Tipo de Examen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estudiante in estudiantes %}
+            <tr>
+                <td>{{ estudiante['id'] }}</td> <!-- ID del estudiante -->
+                <td>{{ estudiante['dni'] }}</td> <!-- DNI del estudiante -->
+                <td>{{ estudiante['nombre'] }}</td> <!-- Nombre del estudiante -->
+                <td>
+                    <!-- Campo para ingresar la nota del estudiante -->
+                    <input type="text" class="form-control" name="nota_{{ estudiante['id'] }}" placeholder="Ej. A, B, C, AD" 
+                           pattern="^(A|B|C|AD)$" title="Solo puedes ingresar A, B, C, o AD" required>
+                </td>
+                <td>
+                    <!-- Campo para seleccionar el tipo de examen -->
+                    <select class="form-control" name="tipo_{{ estudiante['id'] }}" required>
+                        <option value="">Seleccionar tipo de examen</option>
+                        <option value="Parcial">Parcial</option>
+                        <option value="Final">Final</option>
+                        <option value="Extraordinario">Extraordinario</option>
+                    </select>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Botón para guardar las notas -->
+    <button type="submit" class="btn btn-primary">Guardar Notas</button>
+</form>
+{% endblock %}
