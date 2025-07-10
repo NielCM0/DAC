@@ -33,23 +33,16 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label for="seccion" class="form-label">Sección</label>
-                         <select class="form-select" name="seccion" id="seccion" required>
-                          <option value="">-- Seleccione la sección --</option>
-                        <option value="A">Sección A</option>
-                         <option value="B">Sección B</option>
-                         <option value="C">Sección C</option>
-                        <option value="D">Sección D</option>
-                        <option value="E">Sección E</option>
-                        <option value="F">Sección F</option>
-                        <option value="G">Sección G</option>
-                        <option value="H">Sección H</option>
-                        <option value="I">Sección I</option>
-                        <option value="J">Sección J</option>
+          <div class="mb-3">
+    <label for="seccion" class="form-label">Sección</label>
+    <select class="form-select" name="seccion" id="seccion" required>
+        <option value="">-- Seleccione la sección --</option>
+        {% for s in 'ABCDEFGHIJ' %}
+            <option value="{{ s }}">{{ s }}</option>
+        {% endfor %}
+    </select>
+</div>
 
-                          </select>
-                        </div>
 
                     <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                         <a href="/admin" class="btn btn-secondary w-100">Cancelar</a>

@@ -4,6 +4,7 @@ from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 from flask import jsonify
+from flask import Flask, render_template, request, redirect, session, flash
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
@@ -23,6 +24,20 @@ def get_db_connection():
         port=DB_PORT,
         cursor_factory=RealDictCursor
     )
+def get_all_courses():
+    conn = get_db_connection()  # Establece la conexión a la base de datos
+    cur = conn.cursor()
+    
+    # Realiza la consulta SQL para obtener todos los cursos
+    cur.execute("SELECT id, nombre FROM cursos")
+    cursos = cur.fetchall()  # Devuelve todos los resultados de la consulta
+    
+    # Cierra la conexión
+    cur.close()
+    conn.close()
+    
+    return cursos
+
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -100,22 +115,74 @@ def estudiantes():
 
 @app.route('/crear_usuario_docente', methods=['GET', 'POST'])
 def crear_usuario_docente():
-    if session.get('rol') != 'docente':
+    if session.get('rol') != 'docente':  # Verificamos que sea un docente
         return redirect('/')
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
     if request.method == 'POST':
         dni = request.form['dni']
         nombre = request.form['nombre']
         password = generate_password_hash(request.form['password'])
-        rol = request.form['rol']
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("INSERT INTO usuarios (dni, nombre, password, rol) VALUES (%s, %s, %s, %s)",
-                    (dni, nombre, password, rol))
-        conn.commit()
+        rol = 'estudiante'  # Siempre asignamos rol 'estudiante'
+        curso_id = request.form['curso']  
+
+        # Verifica si el DNI ya está registrado
+        cur.execute("SELECT id FROM usuarios WHERE dni = %s", (dni,))
+        existing_user = cur.fetchone()
+
+        if existing_user:
+            flash("Este DNI ya está registrado", "error")
+            return redirect('/crear_usuario_docente')
+
+        # Insertar el estudiante en la tabla usuarios
+        cur.execute("""
+            INSERT INTO usuarios (dni, nombre, password, rol)
+            VALUES (%s, %s, %s, %s)
+            RETURNING id
+        """, (dni, nombre, password, rol))
+
+        # Obtener el id del estudiante recién creado
+        estudiante = cur.fetchone()
+
+        # Depuración: Imprimir el resultado de la consulta
+        print("Resultado de la inserción del estudiante:", estudiante)
+
+        # Verificamos si se ha insertado correctamente
+        if estudiante is None:  # Si no hay respuesta válida, manejamos el error
+            flash("Hubo un error al crear el estudiante", "error")
+            conn.commit()  # Aseguramos que cualquier cambio en la base de datos se guarde
+            cur.close()
+            conn.close()
+            return redirect('/crear_usuario_docente')
+
+        estudiante_id = estudiante['id']  # Acceder a la columna 'id' de RealDictRow
+
+        # Depuración: Verificar que estudiante_id es válido
+        print(f"Estudiante ID: {estudiante_id}")
+
+        # Insertar relación estudiante-curso en la tabla estudiantes_cursos
+        cur.execute("""
+            INSERT INTO estudiantes_cursos (curso_id, estudiante_id)
+            VALUES (%s, %s)
+        """, (curso_id, estudiante_id))
+
+        conn.commit()  # Guardamos los cambios
         cur.close()
         conn.close()
+
+        flash('Estudiante creado y asignado al curso correctamente', 'success')
         return redirect('/docente')
-    return render_template('crear_usuario_docente.html')
+
+    # Obtener los cursos disponibles para mostrarlos en el formulario
+    cur.execute("SELECT id, nombre, seccion FROM cursos")
+    cursos = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template('crear_usuario_docente.html', cursos=cursos)
 
 @app.route('/crear_curso', methods=['GET', 'POST'])
 def crear_curso():
@@ -486,6 +553,50 @@ def buscar_estudiante():
     except Exception as e:
         print("ERROR en /buscar_estudiante:", e)
         return jsonify({"error": "Error al buscar estudiantes"}), 500
+
+@app.route('/ver_estudiantes_curso/<int:curso_id>', methods=['GET', 'POST'])
+def ver_estudiantes_curso(curso_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        # Obtener las notas y tipos de examen enviados
+        for estudiante_id in request.form:
+            # Verificamos que el campo es para la nota del estudiante
+            if estudiante_id.startswith("nota_"):
+                # Obtener la nota y tipo de examen para el estudiante
+                nota = request.form[estudiante_id]
+                tipo_examen = request.form.get(f"tipo_{estudiante_id.split('_')[1]}")
+                
+                # Actualizar la tabla con las notas y tipo de examen
+                cur.execute("""
+                    INSERT INTO notas (estudiante_id, curso_id, nota, tipo)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (estudiante_id, curso_id) 
+                    DO UPDATE SET nota = EXCLUDED.nota, tipo = EXCLUDED.tipo
+                """, (estudiante_id.split('_')[1], curso_id, nota, tipo_examen))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash("Notas y tipos de examen guardados correctamente", "success")
+        return redirect(f"/ver_estudiantes_curso/{curso_id}")
+
+    # Obtener los estudiantes del curso
+    cur.execute("""
+        SELECT u.id, u.nombre, u.dni 
+        FROM usuarios u
+        JOIN estudiantes_cursos ec ON u.id = ec.estudiante_id
+        WHERE ec.curso_id = %s
+    """, (curso_id,))
+    estudiantes = cur.fetchall()
+    print("Estudiantes:", estudiantes)
+
+
+    cur.close()
+    conn.close()
+
+    return render_template('ver_estudiantes_curso.html', estudiantes=estudiantes, curso_id=curso_id)
 
 if __name__ == '__main__':
     app.run(debug=True)

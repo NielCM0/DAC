@@ -3,6 +3,8 @@
 {% block title %}Crear Usuario{% endblock %}
 
 {% block content %}
+
+
 <div class="row justify-content-center">
     <div class="col-lg-6 col-md-8 col-sm-12">
         <div class="card shadow-sm">
@@ -32,6 +34,16 @@
                         </select>
                     </div>
 
+                    <div class="mb-3">
+                        <label for="curso" class="form-label">Curso</label>
+                        <select class="form-select" name="curso" id="curso" required>
+                            <option value="">-- Seleccione un curso --</option>
+                            {% for curso in cursos %}
+                                <option value="{{ curso.id }}">{{ curso.nombre }} Seccion: {{ curso.seccion }}</option>
+                            {% endfor %}
+                        </select>
+                        </div>
+                  
                     <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                         <a href="/docente" class="btn btn-secondary w-100">Cancelar</a>
                         <button type="submit" class="btn btn-primary w-100">Crear Usuario</button>
@@ -43,6 +55,9 @@
 </div>
 
 <script>
+/*{% for s in 'ABCDEFGHIJ' %}
+            <option value="{{ s }}">{{ s }}</option>
+        {% endfor %}*/
 function consultarReniec() {
     const dni = document.getElementById('dni').value;
     if (dni.length === 8) {
@@ -59,4 +74,5 @@ function consultarReniec() {
     }
 }
 </script>
+
 {% endblock %}
